@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 
-namespace Bounce.World
+namespace Bounce
 {
     public class Segment
     {
@@ -46,7 +46,7 @@ namespace Bounce.World
             float x = startPoint.X - endPoint.X;
             float y = startPoint.Y - endPoint.Y;
 
-            return (float) Math.Atan2(y, x);
+            return (float) Math.Atan2(x, y);
         }
 
         #endregion

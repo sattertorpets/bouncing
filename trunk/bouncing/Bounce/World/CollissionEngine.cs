@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 
-namespace Bounce.World
+namespace Bounce
 {
     public class CollissionEngine
     {
@@ -33,6 +34,14 @@ namespace Bounce.World
 
             segmentGrid = new List<Segment>[worldWidth / gridsize, worldHeight / gridsize];
 
+            for (int i = 0; i < worldWidth / gridsize; i++)
+            {
+                for (int j = 0; j < worldHeight / gridsize; j++)
+                {
+                    segmentGrid[i, j] = new List<Segment>();
+                }
+            }
+
             //Put segments in all grid squares they cover.
             foreach (Segment segment in allSegments)
             {
@@ -52,40 +61,107 @@ namespace Bounce.World
 
         #endregion
 
+        #region Draw
+
+        public void Draw(Camera camera)
+        {
+            foreach (Segment segment in allSegments)
+            {
+                VertexPositionColor[] pointList = new VertexPositionColor[2];
+
+                pointList[0] = new VertexPositionColor(
+                            new Vector3(segment.StartPoint, 0), Color.Black);
+
+                pointList[1] = new VertexPositionColor(
+                            new Vector3(segment.EndPoint, 0), Color.Black);
+
+                // Initialize an array of indices of type short.
+                short[] lineListIndices = new short[2];
+
+                lineListIndices[0] = 0;
+                lineListIndices[1] = 1;
+
+                camera.BaseEffect.Begin();
+
+                foreach (EffectPass pass in camera.BaseEffect.CurrentTechnique.Passes)
+                {
+                    pass.Begin();
+
+                    camera.GrapicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(
+                        PrimitiveType.LineList,
+                        pointList,
+                        0,  // vertex buffer offset to add to each element of the index buffer
+                        2,  // number of vertices in pointList
+                        lineListIndices,  // the index buffer
+                        0,  // first index element to read
+                        1   // number of primitives to draw
+                        );
+
+                    pass.End();
+                }
+
+                camera.BaseEffect.End();
+            }
+        }
+
+        #endregion
+
         #region Public Methods
 
-        public void collission(Player.Ball ball)
+        public void collission(Ball ball)
         {
-            int x1 = ball.Bbox.Left;
-            int y1 = ball.Bbox.Top;
+            int x1 = ball.Bbox.Left / gridsize;
+            int y1 = ball.Bbox.Top / gridsize;
 
-            int x2 = ball.Bbox.Right;
-            int y2 = ball.Bbox.Bottom;
+            int x2 = ball.Bbox.Right / gridsize;
+            int y2 = ball.Bbox.Bottom / gridsize;
 
             List<Segment> segments = new List<Segment>();
 
+            //Collect all segments the boundingbox of the ball has in it.
             for (int i = x1; i <= x2; i++)
                 for (int j = y1; j <= y2; j++)
                 {
                     segments.AddRange(segmentGrid[i, j]);
                 }
+
+            //Go through all segments
             foreach (Segment segment in segments)
             {
+                //Find angle between segment and Y-axis
                 float angle = segment.angleToYAxis();
-                Vector2 rotatedPoint = ball.Position;
+                //Rotate balls middle point according to segments angle to Y-axis
+                Vector3 rotatedPoint = ball.Position;
                 Matrix transform =
                     Matrix.CreateTranslation(new Vector3(-segment.StartPoint, 0.0f)) *
                     Matrix.CreateRotationZ(angle) *
                     Matrix.CreateTranslation(new Vector3(segment.StartPoint, 0.0f));
-                Vector2.Transform(rotatedPoint, transform);
+                rotatedPoint = Vector3.Transform(rotatedPoint, transform);
 
-                if (rotatedPoint.X + ball.Radius <= segment.StartPoint.X)
+                //If ball is to the right of segment
+                if (Colliding(rotatedPoint, (int)segment.StartPoint.X, ball.Radius))
                 {
-                    Vector2 velocity = ball.Velocity;
-                    Vector2.Transform(velocity, Matrix.CreateRotationZ(angle));
+                    Vector3 velocity = ball.Velocity;
+
+                    int moves = 0;
+                    Vector3 direction = -velocity / 10;
+                    while (Colliding(rotatedPoint, (int)segment.StartPoint.X, ball.Radius))
+                    {
+                        ball.move(direction);
+                        moves ++;
+                        rotatedPoint = ball.Position;
+                        rotatedPoint = Vector3.Transform(rotatedPoint, transform);
+                    }
+
+                    velocity = Vector3.Transform(velocity, Matrix.CreateRotationZ(angle));
                     velocity.X = -velocity.X;
-                    Vector2.Transform(velocity, Matrix.CreateRotationZ(-angle));
+                    velocity = Vector3.Transform(velocity, Matrix.CreateRotationZ(-angle));
                     ball.Velocity = velocity;
+
+                    for (int i = 0; i <= moves; i++)
+                    {
+                        ball.move(velocity / 10);
+                    }
                 }
             }
         }
@@ -93,6 +169,16 @@ namespace Bounce.World
         #endregion
 
         #region Private Methods
+
+        private bool Colliding(Vector3 position, int X, int radius)
+        {
+            if (position.X <= X && position.X + radius >= X)
+                return true;
+            else if (position.X > X && position.X - radius <= X)
+                return true;
+            else
+                return false;
+        }
 
         private void LoadSegments()
         {
