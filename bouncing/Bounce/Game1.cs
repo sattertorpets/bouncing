@@ -20,6 +20,7 @@ namespace Bounce
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        private World world;
 
         public Game1()
         {
@@ -35,9 +36,19 @@ namespace Bounce
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             base.Initialize();
+
+            int width = 1280;
+            int height = 720;
+
+            graphics.PreferredBackBufferWidth = width;
+            graphics.PreferredBackBufferHeight = height;
+
+            this.graphics.IsFullScreen = true;
+
+            world = new World(2000, 2000, graphics.GraphicsDevice);
+            world.LoadContent(Content);
+            
         }
 
         /// <summary>
@@ -46,10 +57,7 @@ namespace Bounce
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
         }
 
         /// <summary>
@@ -72,7 +80,7 @@ namespace Bounce
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here
+            world.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -85,7 +93,7 @@ namespace Bounce
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            world.Draw(spriteBatch);
 
             base.Draw(gameTime);
         }

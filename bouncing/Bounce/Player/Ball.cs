@@ -3,27 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 
-namespace Bounce.Player
+namespace Bounce
 {
     public class Ball
     {
         #region Fields
 
-        private Vector2 position;
-        private Vector2 velocity;
+        private Vector3 position;
+        private Vector3 velocity;
         private int radius;
+
+        private Texture2D texture;
 
         #endregion
 
         #region Properties
 
-        public Vector2 Position
+        public Vector3 Position
         {
             get { return position; }
             set { position = value; }
         }
-        public Vector2 Velocity
+        public Vector3 Velocity
         {
             get { return velocity; }
             set { velocity = value; }
@@ -45,11 +49,75 @@ namespace Bounce.Player
 
         #region Initialization
 
-        public Ball(Vector2 position, Vector2 velocity, int radius)
+        public Ball(Vector3 position, Vector3 velocity, int radius)
         {
             this.position = position;
             this.velocity = velocity;
             this.radius = radius;
+        }
+
+        public void LoadContent(ContentManager content)
+        {
+            texture = content.Load<Texture2D>("Player/ball");
+        }
+
+        #endregion
+
+        #region Update and Draw
+
+        public void Update(GameTime gameTime)
+        {
+            float elapsedTime = gameTime.ElapsedGameTime.Milliseconds / 1000f;
+            position += velocity * elapsedTime;
+        }
+
+        public void Draw(Camera camera)
+        {
+            VertexPositionColor[] pointList = new VertexPositionColor[21];
+
+            for (int i = 0; i < 360; i+=18)
+            {
+                Vector3 point = new Vector3((float)(radius * Math.Cos((2.0 * Math.PI / 360) * i)),
+                                    (float)(radius * Math.Sin((2.0 * Math.PI / 360) * i)), 0f);
+                point += position;
+                pointList[i/18] = new VertexPositionColor(point, Color.Black);
+            }
+            pointList[20] = new VertexPositionColor(position, Color.Black);
+
+            short[] triangleListIndices = { 20, 0, 1, 20, 2, 3, 20, 4, 5, 20, 6, 7, 20, 8, 9, 20, 10, 11, 20, 12, 13, 20, 14, 15, 20, 16, 17, 20, 18, 19};
+            camera.BaseEffect.Begin();
+
+            foreach (EffectPass pass in camera.BaseEffect.CurrentTechnique.Passes)
+            {
+                pass.Begin();
+                    camera.GrapicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(
+                    PrimitiveType.TriangleList,
+                    pointList,
+                    0,   // vertex buffer offset to add to each element of the index buffer
+                    21,   // number of vertices to draw
+                    triangleListIndices,
+                    0,   // first index element to read
+                    10    // number of primitives to draw
+                    );
+                 
+                pass.End();
+            }
+
+            camera.BaseEffect.End();
+            
+                
+                /*spriteBatch.Draw(texture, position, null, Color.White, 0.0f, 
+                new Vector2(texture.Width / 2, texture.Height / 2), 1.0f,
+                SpriteEffects.None, 0.0f); */
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public void move(Vector3 direction)
+        {
+            position += direction;
         }
 
         #endregion
