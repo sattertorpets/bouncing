@@ -84,7 +84,11 @@ namespace Bounce
             }
             pointList[20] = new VertexPositionColor(position, Color.Black);
 
-            short[] triangleListIndices = { 20, 0, 1, 20, 2, 3, 20, 4, 5, 20, 6, 7, 20, 8, 9, 20, 10, 11, 20, 12, 13, 20, 14, 15, 20, 16, 17, 20, 18, 19};
+            short[] triangleListIndices = { 20, 0, 1, 20, 1, 2, 20, 2, 3, 20, 3, 4, 20, 4, 5, 
+                                              20, 5, 6, 20, 6, 7, 20, 7, 8, 20, 8, 9, 
+                                              20, 9, 10, 20, 10, 11, 20, 11, 12, 20, 12, 13,
+                                              20, 13, 14, 20, 14, 15, 20, 15, 16, 20, 16, 17,
+                                              20, 17, 18, 20, 18, 19, 20, 19, 0};
             camera.BaseEffect.Begin();
 
             foreach (EffectPass pass in camera.BaseEffect.CurrentTechnique.Passes)
@@ -97,7 +101,7 @@ namespace Bounce
                     21,   // number of vertices to draw
                     triangleListIndices,
                     0,   // first index element to read
-                    10    // number of primitives to draw
+                    20    // number of primitives to draw
                     );
                  
                 pass.End();

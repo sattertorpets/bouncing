@@ -15,7 +15,7 @@ namespace Bounce
         private int screenHeight;
         private int screenWidth;
         private CollissionEngine worldCollisions;
-        private Ball ball = new Ball(new Vector3(30, 250, 0), new Vector3(20, 0, 0), 20);
+        private Ball ball = new Ball(new Vector3(200, 250, 0), new Vector3(-20, 20, 0), 20);
         private Camera camera;
 
         #endregion

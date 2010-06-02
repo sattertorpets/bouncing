@@ -89,6 +89,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="World.cs" />
+    <Compile Include="World\BackgroundImagery.cs" />
     <Compile Include="World\Camera.cs" />
     <Compile Include="World\CollissionEngine.cs" />
     <Compile Include="World\Segment.cs" />
