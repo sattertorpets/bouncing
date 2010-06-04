@@ -58,7 +58,7 @@ namespace Bounce
 
         public void LoadContent(ContentManager content)
         {
-            texture = content.Load<Texture2D>("Player/ball");
+            //texture = content.Load<Texture2D>("Player/ball");
         }
 
         #endregion
